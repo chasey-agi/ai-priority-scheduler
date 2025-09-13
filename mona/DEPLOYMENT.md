@@ -23,7 +23,7 @@
    - `NEXT_PUBLIC_SUPABASE_URL`: Supabase 项目 URL
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase 匿名密钥
    - `SUPABASE_SERVICE_ROLE_KEY`: Supabase 服务角色密钥
-   - `DATABASE_URL`: PostgreSQL 数据库连接字符串
+
    - `NEXTAUTH_SECRET`: NextAuth 密钥（生成命令：`openssl rand -base64 32`）
    - `NEXTAUTH_URL`: 部署后的域名（如：`https://your-app.vercel.app`）
 
@@ -39,17 +39,7 @@
    npm install
    ```
 
-2. **生成 Prisma 客户端**
-   ```bash
-   npx prisma generate
-   ```
-
-3. **运行数据库迁移**
-   ```bash
-   npx prisma migrate deploy
-   ```
-
-4. **构建项目**
+2. **构建项目**
    ```bash
    npm run build
    ```
@@ -73,7 +63,6 @@ COPY package*.json ./
 RUN npm ci --only=production
 
 COPY . .
-RUN npx prisma generate
 RUN npm run build
 
 EXPOSE 3000
@@ -104,7 +93,7 @@ docker run -p 3000:3000 --env-file .env.local ai-priority-scheduler
 - [ ] 确保 Supabase 数据库可访问
 - [ ] 验证 OpenAI API 密钥有效
 - [ ] 设置正确的 NEXTAUTH_URL
-- [ ] 运行数据库迁移
+
 - [ ] 测试 Google OAuth 登录
 - [ ] 验证任务创建和管理功能
 
@@ -113,8 +102,8 @@ docker run -p 3000:3000 --env-file .env.local ai-priority-scheduler
 ### 常见问题
 
 1. **数据库连接失败**
-   - 检查 `DATABASE_URL` 是否正确
    - 确保 Supabase 项目处于活跃状态
+   - 检查 Supabase 连接配置
 
 2. **OAuth 登录失败**
    - 验证 Google OAuth 配置

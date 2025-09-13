@@ -18,7 +18,7 @@ if [ ! -f ".env.local" ]; then
     echo "- NEXT_PUBLIC_SUPABASE_URL"
     echo "- NEXT_PUBLIC_SUPABASE_ANON_KEY"
     echo "- SUPABASE_SERVICE_ROLE_KEY"
-    echo "- DATABASE_URL"
+
     echo "- NEXTAUTH_SECRET"
     echo "- NEXTAUTH_URL"
     echo ""
@@ -27,14 +27,6 @@ fi
 # 安装依赖
 echo "📦 安装依赖..."
 npm install
-
-# 生成 Prisma 客户端
-echo "🔧 生成 Prisma 客户端..."
-npx prisma generate
-
-# 运行数据库迁移（如果需要）
-echo "🗄️  检查数据库迁移..."
-npx prisma migrate deploy
 
 # 构建项目
 echo "🔨 构建项目..."

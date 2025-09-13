@@ -51,6 +51,16 @@ export default function HomePage(){
   useEffect(()=>{
     // 检测是否支持媒体录音
     setRecSupported(!!navigator.mediaDevices?.getUserMedia);
+    
+    // 确保用户profile存在
+    const ensureProfile = async () => {
+      try {
+        await fetch('/api/create-profile', { method: 'POST' });
+      } catch (error) {
+        console.error('Failed to ensure profile:', error);
+      }
+    };
+    ensureProfile();
   },[]);
 
   const parseSpeech = (raw: string) => {

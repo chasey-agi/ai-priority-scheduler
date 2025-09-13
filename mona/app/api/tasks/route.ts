@@ -73,6 +73,24 @@ export async function POST(request: NextRequest) {
     const user = await getUser()
     const supabase = await createServerComponentClient()
     
+    // Ensure user exists before creating task
+    const { error: userError } = await supabase
+      .from('users')
+      .upsert({
+        id: user.id,
+        email: user.email || '',
+        name: user.user_metadata?.full_name || user.user_metadata?.name || '',
+        avatar_url: user.user_metadata?.avatar_url || null,
+        provider: user.app_metadata?.provider || 'email',
+        provider_id: user.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+    
+    if (userError) {
+      console.error('Error creating/updating user:', userError)
+    }
+    
     const body = await request.json()
     const { content, category = "其他", priority, deadline, status } = body ?? {}
     
