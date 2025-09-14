@@ -4,11 +4,6 @@
   "installCommand": "pnpm install",
   "buildCommand": "pnpm run build",
   "devCommand": "pnpm run dev",
-  "env": {
-    "OPENAI_API_KEY": "@OPENAI_API_KEY",
-    "NEXT_PUBLIC_SUPABASE_URL": "@NEXT_PUBLIC_SUPABASE_URL",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@NEXT_PUBLIC_SUPABASE_ANON_KEY"
-  },
   "functions": {
     "mona/app/api/**/route.ts": {
       "maxDuration": 30
