@@ -1,19 +1,16 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "installCommand": "cd mona && npm install",
-  "buildCommand": "cd mona && npm run build",
-  "devCommand": "cd mona && npm run dev",
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm run build",
+  "devCommand": "pnpm run dev",
   "env": {
-    "OPENAI_API_KEY": "@openai_api_key",
-    "NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next_public_supabase_anon_key"
+    "OPENAI_API_KEY": "@OPENAI_API_KEY",
+    "NEXT_PUBLIC_SUPABASE_URL": "@NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@NEXT_PUBLIC_SUPABASE_ANON_KEY"
   },
   "functions": {
-    "mona/app/**/route.ts": {
-      "maxDuration": 30
-    },
-    "mona/app/**/route.js": {
+    "mona/app/api/**/route.ts": {
       "maxDuration": 30
     }
   },
