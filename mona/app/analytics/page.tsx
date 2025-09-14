@@ -10,26 +10,43 @@ import { TrendingUp, TrendingDown, Calendar, CheckCircle, Clock, Target, BarChar
 import { DBTask, SWR_KEYS, fetchJSON, priNumToCh } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
+// 简约亮色配色方案 - 基于数据可视化最佳实践
 const chartConfig = {
   completed: {
     label: "已完成",
-    color: "hsl(var(--chart-1))",
+    color: "#10b981", // 绿色 - 完成状态
   },
   pending: {
     label: "待完成",
-    color: "hsl(var(--chart-2))",
+    color: "#f59e0b", // 橙色 - 待处理
+  },
+  overdue: {
+    label: "逾期",
+    color: "#ef4444", // 红色 - 逾期警告
   },
   work: {
     label: "工作",
-    color: "hsl(var(--chart-3))",
+    color: "#3b82f6", // 蓝色 - 工作类别
   },
   study: {
     label: "学习",
-    color: "hsl(var(--chart-4))",
+    color: "#8b5cf6", // 紫色 - 学习类别
   },
   life: {
     label: "生活",
-    color: "hsl(var(--chart-5))",
+    color: "#06b6d4", // 青色 - 生活类别
+  },
+  high: {
+    label: "高优先级",
+    color: "#dc2626", // 深红色 - 高优先级
+  },
+  medium: {
+    label: "中优先级",
+    color: "#f59e0b", // 橙色 - 中优先级
+  },
+  low: {
+    label: "低优先级",
+    color: "#10b981", // 绿色 - 低优先级
   },
 };
 
@@ -134,17 +151,35 @@ export default function Analytics() {
     });
 
     tasks.forEach(task => {
-      const createdDate = new Date(task.createdAt).toISOString().split('T')[0];
-      const dayData = last7Days.find(d => d.date === createdDate);
-      if (dayData) {
-        dayData.created++;
+      // 验证 createdAt 时间值
+      if (task.createdAt) {
+        try {
+          const createdDateObj = new Date(task.createdAt);
+          if (!isNaN(createdDateObj.getTime())) {
+            const createdDate = createdDateObj.toISOString().split('T')[0];
+            const dayData = last7Days.find(d => d.date === createdDate);
+            if (dayData) {
+              dayData.created++;
+            }
+          }
+        } catch (error) {
+          console.warn('Invalid createdAt date:', task.createdAt, error);
+        }
       }
 
+      // 验证 updatedAt 时间值
       if (task.status === 'completed' && task.updatedAt) {
-        const completedDate = new Date(task.updatedAt).toISOString().split('T')[0];
-        const dayData = last7Days.find(d => d.date === completedDate);
-        if (dayData) {
-          dayData.completed++;
+        try {
+          const completedDateObj = new Date(task.updatedAt);
+          if (!isNaN(completedDateObj.getTime())) {
+            const completedDate = completedDateObj.toISOString().split('T')[0];
+            const dayData = last7Days.find(d => d.date === completedDate);
+            if (dayData) {
+              dayData.completed++;
+            }
+          }
+        } catch (error) {
+          console.warn('Invalid updatedAt date:', task.updatedAt, error);
         }
       }
     });
@@ -212,224 +247,349 @@ export default function Analytics() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto w-full px-4 py-6 sm:py-10 space-y-6">
-      {/* 页面标题 */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">数据分析</h1>
-        <p className="text-sm text-muted-foreground mt-1">查看执行力数据分析，了解任务完成趋势和改进建议。</p>
-      </div>
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto w-full px-4 py-8 sm:py-12 space-y-8">
+        {/* 页面标题区域 */}
+        <div className="text-center space-y-4">
+          <div className="inline-flex items-center gap-3 px-4 py-2 bg-white rounded-full border border-slate-200 shadow-sm">
+            <div className="p-2 bg-slate-600 rounded-full">
+              <BarChart3 className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-sm font-medium text-slate-600">数据洞察</span>
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-bold text-slate-800">
+            执行力分析报告
+          </h1>
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            深度分析任务完成情况，发现执行模式，提供个性化改进建议
+          </p>
+        </div>
 
-      {/* 核心指标卡片 */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Target className="h-4 w-4 text-blue-600" />
+        {/* 核心指标卡片 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-slate-700">总任务数</CardTitle>
+              <div className="p-2 bg-slate-600 rounded-lg">
+                <Target className="h-4 w-4 text-white" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">总任务</p>
-                <p className="text-2xl font-bold">{basicStats.total}</p>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-slate-800">{basicStats.total}</div>
+              <p className="text-sm text-slate-500 mt-1">累计创建任务</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-slate-700">已完成</CardTitle>
+              <div className="p-2 bg-green-600 rounded-lg">
+                <CheckCircle className="h-4 w-4 text-white" />
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-slate-800">{basicStats.completed}</div>
+              <p className="text-sm text-slate-500 mt-1">已完成任务</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-slate-700">待完成</CardTitle>
+              <div className="p-2 bg-orange-600 rounded-lg">
+                <Clock className="h-4 w-4 text-white" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">已完成</p>
-                <p className="text-2xl font-bold">{basicStats.completed}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Clock className="h-4 w-4 text-orange-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">待完成</p>
-                <p className="text-2xl font-bold">{basicStats.pending}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className={cn("p-2 rounded-lg", 
-                basicStats.completionRate >= 80 ? "bg-green-100" :
-                basicStats.completionRate >= 60 ? "bg-blue-100" :
-                basicStats.completionRate >= 40 ? "bg-yellow-100" : "bg-red-100"
-              )}>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-slate-800">{basicStats.pending}</div>
+              <p className="text-sm text-slate-500 mt-1">待完成任务</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-slate-700">完成率</CardTitle>
+              <div className="p-2 bg-purple-600 rounded-lg">
                 {basicStats.completionRate >= 60 ? 
-                  <TrendingUp className={cn("h-4 w-4", 
-                    basicStats.completionRate >= 80 ? "text-green-600" : "text-blue-600"
-                  )} /> :
-                  <TrendingDown className="h-4 w-4 text-red-600" />
+                  <TrendingUp className="h-4 w-4 text-white" /> :
+                  <TrendingDown className="h-4 w-4 text-white" />
                 }
               </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">完成率</p>
-                <p className="text-2xl font-bold">{basicStats.completionRate}%</p>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-slate-800">{basicStats.completionRate}%</div>
+              <div className="mt-3">
+                <Progress value={basicStats.completionRate} className="h-2 bg-slate-200" />
               </div>
+              <p className="text-sm text-slate-500 mt-2">整体执行效率</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 图表区域 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* 分类完成率 */}
+          <Card className="bg-white border border-slate-200 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3 text-lg font-semibold">
+                <div className="p-2 bg-slate-600 rounded-lg">
+              <BarChart3 className="h-5 w-5 text-white" />
             </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* 图表区域 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 分类完成率柱状图 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
+            <span className="text-slate-800">
               分类完成率
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData.categoryData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="category" />
-                  <YAxis />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="completed" fill="var(--color-completed)" name="已完成" />
-                  <Bar dataKey="pending" fill="var(--color-pending)" name="待完成" />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+            </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={chartConfig} className="h-[320px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData.categoryData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.3} />
+                    <XAxis 
+                      dataKey="category" 
+                      tick={{ fontSize: 12, fill: '#64748b' }}
+                      axisLine={{ stroke: '#cbd5e1' }}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 12, fill: '#64748b' }}
+                      axisLine={{ stroke: '#cbd5e1' }}
+                    />
+                    <ChartTooltip 
+                      content={<ChartTooltipContent />}
+                      cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
+                    />
+                    <Bar dataKey="completed" fill="var(--color-completed)" name="已完成" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="pending" fill="var(--color-pending)" name="待完成" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
 
-        {/* 任务状态饼图 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PieChartIcon className="h-5 w-5" />
+          {/* 任务状态分布 */}
+          <Card className="bg-white border border-slate-200 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3 text-lg font-semibold">
+                <div className="p-2 bg-slate-600 rounded-lg">
+              <PieChartIcon className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-slate-800">
               任务状态分布
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData.pieData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {chartData.pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${(index % 5) + 1}))`} />
-                    ))}
-                  </Pie>
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                </PieChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
+            </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={chartConfig} className="h-[320px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={chartData.pieData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={100}
+                      innerRadius={40}
+                      fill="#8884d8"
+                      dataKey="value"
+                      stroke="#ffffff"
+                      strokeWidth={2}
+                    >
+                      {chartData.pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={index === 0 ? chartConfig.completed.color : chartConfig.pending.color} />
+                      ))}
+                    </Pie>
+                    <ChartTooltip 
+                      content={<ChartTooltipContent />}
+                      contentStyle={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        border: 'none',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* 详细统计和趋势分析 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 分类详细统计 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>分类统计详情</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {Object.entries(basicStats.categoryStats).map(([category, stats]) => {
-              const rate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
-              return (
-                <div key={category} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">{category}</span>
-                    <Badge variant="outline">{stats.completed}/{stats.total}</Badge>
-                  </div>
-                  <Progress value={rate} className="h-2" />
-                  <p className="text-sm text-muted-foreground">完成率: {rate}%</p>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
+        {/* 详细统计和趋势分析 */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* 分类详细统计 */}
+          <Card className="lg:col-span-2 bg-white border border-slate-200 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3 text-lg font-semibold">
+                <div className="p-2 bg-slate-600 rounded-lg">
+              <Calendar className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-slate-800">
+              分类详细统计
+            </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {Object.entries(basicStats.categoryStats).map(([category, stats]) => {
+                  const rate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
+                  return (
+                    <div key={category} className="group p-4 bg-white rounded-xl border border-slate-200 hover:shadow-lg transition-all duration-300">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div 
+                            className="w-4 h-4 rounded-full shadow-sm" 
+                            style={{ backgroundColor: chartConfig[category as keyof typeof chartConfig]?.color || '#666' }} 
+                          />
+                          <span className="font-semibold text-slate-800">
+                            {chartConfig[category as keyof typeof chartConfig]?.label || category}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-6 text-sm">
+                          <div className="text-center">
+                            <div className="text-slate-600 text-xs">总计</div>
+                            <div className="font-bold text-slate-800">{stats.total}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-green-600 text-xs">完成</div>
+                            <div className="font-bold text-green-700">{stats.completed}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-orange-600 text-xs">待办</div>
+                            <div className="font-bold text-orange-700">{stats.total - stats.completed}</div>
+                          </div>
+                          <Badge 
+                            variant={rate >= 80 ? "default" : rate >= 60 ? "secondary" : "destructive"}
+                            className="px-3 py-1 font-semibold"
+                          >
+                            {rate}%
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="mt-3">
+                        <Progress 
+                          value={rate} 
+                          className="h-2 bg-slate-200" 
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* 7天趋势图表 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
+          {/* 趋势分析和建议 */}
+          <Card className="bg-white border border-slate-200 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3 text-lg font-semibold">
+                <div className="p-2 bg-slate-600 rounded-lg">
+              <TrendingUp className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-slate-800">
               近7天任务趋势
+            </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* 趋势状态 */}
+              <div className="p-4 bg-purple-50 rounded-xl border border-purple-100">
+                <div className="flex items-center justify-between mb-3">
+                  <Badge 
+                    variant={trendAnalysis.trend === "excellent" ? "default" : 
+                            trendAnalysis.trend === "good" ? "secondary" : 
+                            trendAnalysis.trend === "average" ? "outline" : "destructive"}
+                    className="px-3 py-1 font-semibold"
+                  >
+                    {trendAnalysis.trendText}
+                  </Badge>
+                  <span className="text-sm font-medium text-slate-600">
+                    近3天完成率: {Math.round(trendAnalysis.recentRate)}%
+                  </span>
+                </div>
+                <Progress 
+                  value={trendAnalysis.recentRate} 
+                  className="h-3 bg-slate-200" 
+                />
+              </div>
+              
+              {/* 改进建议 */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  个性化建议
+                </h4>
+                <div className="space-y-2">
+                  {trendAnalysis.suggestions.map((suggestion, index) => (
+                    <div key={index} className="flex items-start gap-3 p-3 bg-white rounded-lg border border-slate-200">
+                    <div className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <span className="text-sm text-slate-700 leading-relaxed">
+                        {suggestion}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        {/* 7天趋势图表 */}
+        <Card className="bg-white border border-slate-200 shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-3 text-lg font-semibold">
+              <div className="p-2 bg-slate-600 rounded-lg">
+              <Target className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-slate-800">
+              执行力分析
+            </span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
+            <ChartContainer config={chartConfig} className="h-[320px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trendData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="dateLabel" />
-                  <YAxis />
-                  <ChartTooltip content={<ChartTooltipContent />} />
+                <LineChart data={trendData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.3} />
+                  <XAxis 
+                    dataKey="dateLabel" 
+                    tick={{ fontSize: 12, fill: '#64748b' }}
+                    axisLine={{ stroke: '#cbd5e1' }}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12, fill: '#64748b' }}
+                    axisLine={{ stroke: '#cbd5e1' }}
+                  />
+                  <ChartTooltip 
+                    content={<ChartTooltipContent />}
+                    contentStyle={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
                   <Line 
                     type="monotone" 
                     dataKey="created" 
                     stroke="var(--color-pending)" 
-                    strokeWidth={2}
+                    strokeWidth={3}
                     name="创建任务"
+                    dot={{ fill: 'var(--color-pending)', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: 'var(--color-pending)', strokeWidth: 2 }}
                   />
                   <Line 
                     type="monotone" 
                     dataKey="completed" 
                     stroke="var(--color-completed)" 
-                    strokeWidth={2}
+                    strokeWidth={3}
                     name="完成任务"
+                    dot={{ fill: 'var(--color-completed)', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: 'var(--color-completed)', strokeWidth: 2 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
             </ChartContainer>
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center gap-2">
-                <Badge 
-                  variant={trendAnalysis.trend === "excellent" ? "default" : 
-                          trendAnalysis.trend === "good" ? "secondary" : 
-                          trendAnalysis.trend === "average" ? "outline" : "destructive"}
-                >
-                  {trendAnalysis.trendText}
-                </Badge>
-                <span className="text-sm text-muted-foreground">
-                  近3天完成率: {Math.round(trendAnalysis.recentRate)}%
-                </span>
-              </div>
-              
-              <div className="space-y-1">
-                <h4 className="text-sm font-medium">改进建议:</h4>
-                <ul className="space-y-1">
-                  {trendAnalysis.suggestions.map((suggestion, index) => (
-                    <li key={index} className="text-xs text-muted-foreground flex items-start gap-2">
-                      <span className="text-primary mt-0.5">•</span>
-                      {suggestion}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>

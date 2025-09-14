@@ -83,7 +83,7 @@ export async function signOut() {
 export async function getProfile(userId: string) {
   const supabase = createClientComponentClient()
   const { data, error } = await supabase
-    .from('profiles')
+    .from('users')
     .select('*')
     .eq('id', userId)
     .single()
@@ -97,12 +97,12 @@ export async function getProfile(userId: string) {
 }
 
 export async function updateProfile(userId: string, updates: {
-  full_name?: string
+  name?: string
   avatar_url?: string
 }) {
   const supabase = createClientComponentClient()
   const { data, error } = await supabase
-    .from('profiles')
+    .from('users')
     .update(updates)
     .eq('id', userId)
     .select()

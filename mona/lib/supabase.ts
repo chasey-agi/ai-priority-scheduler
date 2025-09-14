@@ -48,30 +48,36 @@ export type Database = {
           user_id?: string
         }
       }
-      profiles: {
+      users: {
         Row: {
           id: string
           email: string
-          full_name: string | null
+          name: string | null
           avatar_url: string | null
-          created_at: string
-          updated_at: string
+          provider: string
+          provider_id: string
+          created_at: string | null
+          updated_at: string | null
         }
         Insert: {
-          id: string
+          id?: string
           email: string
-          full_name?: string | null
+          name?: string | null
           avatar_url?: string | null
-          created_at?: string
-          updated_at?: string
+          provider?: string
+          provider_id: string
+          created_at?: string | null
+          updated_at?: string | null
         }
         Update: {
           id?: string
           email?: string
-          full_name?: string | null
+          name?: string | null
           avatar_url?: string | null
-          created_at?: string
-          updated_at?: string
+          provider?: string
+          provider_id?: string
+          created_at?: string | null
+          updated_at?: string | null
         }
       }
     }

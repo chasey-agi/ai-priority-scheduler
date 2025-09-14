@@ -3,21 +3,25 @@ import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Clock, XCircle, LogOut, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { CheckCircle, Clock, XCircle, LogOut, User, Plus, Filter, BarChart3, Target, TrendingUp, Calendar } from "lucide-react";
 import { DBTask, priNumToCh } from "@/lib/utils";
 import TaskForm from "@/components/tasks/TaskForm";
-import TaskTable from "@/components/tasks/TaskTable";
+import EnhancedTaskTable from "@/components/tasks/EnhancedTaskTable";
 import EditTaskDialog from "@/components/tasks/EditTaskDialog";
 import BatchToolbar from "@/components/tasks/BatchToolbar";
-import TaskFilters, { Filters } from "@/components/tasks/TaskFilters";
+import AddTaskDialog from "@/components/tasks/AddTaskDialog";
+import { Filters } from "@/components/tasks/TaskFilters";
 import { useTasks } from "@/lib/hooks/useTasks";
 import { useAuth, signOut } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 export default function Tasks(){
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const { tasks, isLoading, addTask, updateTask, deleteTask, toggleStatus, batchComplete, batchDelete, batchSetPriority } = useTasks("all");
+  const { tasks, isLoading, addTask: createTask, updateTask, deleteTask, toggleStatus, batchComplete, batchDelete, batchSetPriority } = useTasks("all");
   const [filters, setFilters] = useState<Filters>({ tab: "all", sort: "combined", date: "all", category: "全部", priority: "全部", keyword: "" });
   const [selectedTasks,setSelectedTasks]=useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<DBTask | null>(null);
@@ -120,104 +124,119 @@ export default function Tasks(){
   const quickSetPriority = async (taskId: string, priority: number) => { await updateTask(taskId, { priority } as any); };
 
   return (
-    <div className="max-w-6xl mx-auto w-full px-4 py-6 sm:py-10 space-y-6">
-      {/* Header with user info */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">任务管理</h1>
-          <p className="text-sm text-muted-foreground mt-1">查看与管理所有任务，支持快速编辑、筛选与排序。</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <User className="h-4 w-4" />
-            <span>{user.email}</span>
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
+        {/* Enhanced Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="space-y-1">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-slate-600 rounded-lg shadow-sm">
+                  <Target className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-slate-800">
+                    任务管理
+                  </h1>
+                  <p className="text-slate-600 mt-1">智能管理您的任务，提升工作效率</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSignOut}
-            className="flex items-center gap-2"
-          >
-            <LogOut className="h-4 w-4" />
-            登出
-          </Button>
+        
+
         </div>
-      </div>
-      
-      {/* Filters */}
-      <div className="flex justify-end">
-        <TaskFilters value={filters} onChange={setFilters} categories={categories} />
-      </div>
 
-      {/* 统计卡片 */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Clock className="h-4 w-4 text-blue-600" />
+      {/* Enhanced Statistics Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-white shadow-sm border border-slate-200 hover:shadow-md transition-all duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-600 mb-1">总任务</p>
+                  <p className="text-3xl font-bold text-slate-800">{taskStats.total}</p>
+                  <p className="text-xs text-slate-500 mt-1">全部任务数量</p>
+                </div>
+                <div className="p-3 bg-slate-100 rounded-lg">
+                  <Target className="h-6 w-6 text-slate-600" />
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">总任务</p>
-                <p className="text-2xl font-bold">{taskStats.total}</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white shadow-sm border border-slate-200 hover:shadow-md transition-all duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-600 mb-1">待完成</p>
+                  <p className="text-3xl font-bold text-slate-800">{taskStats.pending}</p>
+                  <p className="text-xs text-slate-500 mt-1">需要处理的任务</p>
+                </div>
+                <div className="p-3 bg-slate-100 rounded-lg">
+                  <Clock className="h-6 w-6 text-slate-600" />
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <XCircle className="h-4 w-4 text-orange-600" />
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white shadow-sm border border-slate-200 hover:shadow-md transition-all duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-600 mb-1">已完成</p>
+                  <p className="text-3xl font-bold text-slate-800">{taskStats.completed}</p>
+                  <p className="text-xs text-slate-500 mt-1">完成的任务</p>
+                </div>
+                <div className="p-3 bg-green-500 rounded-xl shadow-lg">
+                  <CheckCircle className="h-6 w-6 text-white" />
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">待完成</p>
-                <p className="text-2xl font-bold">{taskStats.pending}</p>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-green-100 rounded-full -mr-10 -mt-10 opacity-20"></div>
+            </CardContent>
+          </Card>
+          
+          <Card className="relative overflow-hidden bg-white/90 backdrop-blur-sm shadow-lg border border-purple-100 hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-600 mb-1">完成率</p>
+                  <p className="text-3xl font-bold text-slate-800">{taskStats.completionRate}%</p>
+                  <div className="mt-2">
+                    <Progress value={taskStats.completionRate} className="h-2" />
+                  </div>
+                </div>
+                <div className="p-3 bg-purple-500 rounded-xl shadow-lg">
+                  <TrendingUp className="h-6 w-6 text-white" />
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">已完成</p>
-                <p className="text-2xl font-bold">{taskStats.completed}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <div className="h-4 w-4 text-purple-600 font-bold text-xs flex items-center justify-center">%</div>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">完成率</p>
-                <p className="text-2xl font-bold">{taskStats.completionRate}%</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-purple-100 rounded-full -mr-10 -mt-10 opacity-20"></div>
+            </CardContent>
+          </Card>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader><CardTitle>新建任务</CardTitle></CardHeader>
-          <CardContent>
-            <TaskForm onSubmit={addTask} categories={categories.length? categories: ["工作","学习","生活","其他"]} />
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>任务列表</CardTitle>
-          </CardHeader>
-          <CardContent>
+      {/* Main Content Area */}
+        <div className="w-full">
+          {/* Task List Panel */}
+          <div className="w-full">
+            <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-slate-200">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-lg font-semibold text-slate-800">
+                    <BarChart3 className="h-5 w-5 text-slate-500" />
+                    任务列表
+                  </CardTitle>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="secondary" className="bg-slate-100 text-slate-700 border-slate-200">
+                      {filteredTasks.length} 项任务
+                    </Badge>
+                    <AddTaskDialog
+                      onSubmit={createTask}
+                      categories={categories}
+                    />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
             <Tabs value={filters.tab} onValueChange={(v:any)=>setFilters({ ...filters, tab: v })} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="all" className="flex items-center gap-2">
@@ -240,7 +259,7 @@ export default function Tasks(){
                   onClear={clearSelection}
                 />
                 <div className="mt-2" />
-                <TaskTable 
+                <EnhancedTaskTable 
                   tasks={filteredTasks}
                   isLoading={isLoading}
                   enableSelection
@@ -253,14 +272,19 @@ export default function Tasks(){
                   onQuickPriority={quickSetPriority}
                   onEdit={(t)=> openEdit(t)}
                   onDelete={(id)=> del(id)}
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                  categories={categories}
                 />
               </TabsContent>
             </Tabs>
-          </CardContent>
-        </Card>
-      </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
-      <EditTaskDialog task={editing} onClose={()=> setEditing(null)} onSave={saveEdit} />
+        <EditTaskDialog task={editing} onClose={()=> setEditing(null)} onSave={saveEdit} />
+      </div>
     </div>
   );
 }

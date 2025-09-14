@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,14 +25,17 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-dvh flex flex-col`}>
-        <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <header className="border-b bg-white shadow-sm">
           <div className="max-w-5xl mx-auto flex h-14 items-center justify-between px-4">
-            <Link href="/" className="text-base sm:text-lg font-semibold tracking-tight">AI 语音管家</Link>
-            <nav className="flex items-center gap-2">
-              <Link href="/" className="text-sm font-medium py-2 px-3 rounded-md hover:bg-muted transition-colors">今日概览</Link>
-              <Link href="/tasks" className="text-sm font-medium py-2 px-3 rounded-md hover:bg-muted transition-colors">任务管理</Link>
-              <Link href="/analytics" className="text-sm font-medium py-2 px-3 rounded-md hover:bg-muted transition-colors">数据分析</Link>
-            </nav>
+            <Link href="/" className="text-base sm:text-lg font-semibold tracking-tight text-slate-800">AI 语音管家</Link>
+            <div className="flex items-center gap-4">
+              <nav className="flex items-center gap-2">
+                <Link href="/" className="text-sm font-medium py-2 px-3 rounded-md hover:bg-slate-100 text-slate-600 hover:text-slate-800 transition-colors">今日概览</Link>
+                <Link href="/tasks" className="text-sm font-medium py-2 px-3 rounded-md hover:bg-slate-100 text-slate-600 hover:text-slate-800 transition-colors">任务管理</Link>
+                <Link href="/analytics" className="text-sm font-medium py-2 px-3 rounded-md hover:bg-slate-100 text-slate-600 hover:text-slate-800 transition-colors">数据分析</Link>
+              </nav>
+              <UserAvatar />
+            </div>
           </div>
         </header>
         <main className="flex-1">{children}</main>

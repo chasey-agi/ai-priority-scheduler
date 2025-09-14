@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 
 
 const SpeechHint = () => (
-  <div className="text-xs text-muted-foreground space-y-1">
+  <div className="text-xs text-slate-500 space-y-1">
     <p>语音示例："今天下午三点前提交项目周报，优先级高"</p>
     <p>可识别的关键词：今天/明天/后天；优先级高/中/低；日期如 2025-09-30。</p>
   </div>
@@ -32,6 +32,8 @@ export default function HomePage(){
   const { tasks: allTasks } = useTasks("all");
   const overdueCount = useMemo(()=> allTasks.filter(isOverdue).length, [allTasks]);
   const futureCount = useMemo(()=> allTasks.filter(isFuture).length, [allTasks]);
+  const todayCompletedCount = useMemo(()=> tasks.filter(t => t.status === "completed").length, [tasks]);
+  const completionRate = tasks.length > 0 ? Math.round((todayCompletedCount / tasks.length) * 100) : 0;
 
   const [title,setTitle]=useState("");
   const [desc,setDesc]=useState("");
@@ -186,7 +188,6 @@ export default function HomePage(){
   };
 
   const todays = tasks;
-  const completedCount = tasks.filter(t=> t.status === "completed").length;
 
   const add=async()=>{
     const t=title.trim();
@@ -204,28 +205,46 @@ export default function HomePage(){
   const del=async(id:string)=>{ await deleteTask(id); };
 
   return (
-    <div className="max-w-5xl mx-auto w-full px-4 py-6 sm:py-10 space-y-6">
-      <div className="flex items-end justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">今日概览</h1>
-          <p className="text-sm text-muted-foreground mt-1">突出今天的任务情况，支持手动/语音快速添加。</p>
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-6xl mx-auto w-full px-4 py-6 sm:py-10 space-y-8">
+        {/* 页面头部 */}
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+          <div className="flex items-end justify-between gap-4 flex-wrap">
+            <div className="space-y-2">
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-800">
+                今日概览
+              </h1>
+              <p className="text-slate-600">智能优先级调度，让每一天都高效有序</p>
+            </div>
+            
+            {/* 统计卡片 */}
+            <div className="flex gap-4 flex-wrap">
+              <div className="bg-white border border-slate-200 rounded-lg px-4 py-3 text-center min-w-[80px] shadow-sm">
+                <div className="text-2xl font-bold text-slate-700">{tasks.length}</div>
+                <div className="text-xs text-slate-500">今日任务</div>
+              </div>
+              <div className="bg-white border border-slate-200 rounded-lg px-4 py-3 text-center min-w-[80px] shadow-sm">
+                <div className="text-2xl font-bold text-slate-700">{completionRate}%</div>
+                <div className="text-xs text-slate-500">完成率</div>
+              </div>
+              <div className="bg-white border border-slate-200 rounded-lg px-4 py-3 text-center min-w-[80px] shadow-sm">
+                <div className="text-2xl font-bold text-slate-700">{overdueCount}</div>
+                <div className="text-xs text-slate-500">逾期任务</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="text-sm text-muted-foreground flex items-center gap-3">
-          <span>
-            今日进度：<span className="font-medium text-foreground ml-1">{completedCount}</span>/<span>{todays.length}</span>
-          </span>
-          <span className="hidden sm:inline text-muted-foreground">|</span>
-          <span>逾期 {overdueCount}</span>
-          <span className="hidden sm:inline">将来 {futureCount}</span>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>快速创建任务</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        {/* 主要内容区域 */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="bg-white shadow-sm border border-slate-200 lg:col-span-1">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-slate-800">
+                <div className="w-2 h-2 bg-slate-500 rounded-full"></div>
+                快速创建任务
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
             <div className="flex gap-2">
               <Input placeholder="任务标题（必填）" value={title} onChange={e=>setTitle(e.target.value)} />
               {recSupported && (
@@ -234,11 +253,11 @@ export default function HomePage(){
                     <Loader2 className="h-4 w-4 animate-spin" />
                   </Button>
                 ) : recording ? (
-                  <Button variant="secondary" size="icon" onClick={stopVoice} title="停止录音" className="bg-red-50 border-red-200">
+                  <Button variant="secondary" size="icon" onClick={stopVoice} title="停止录音" className="bg-red-50 border-red-200 hover:bg-red-100">
                     <Square className="h-4 w-4" />
                   </Button>
                 ) : (
-                  <Button variant="secondary" size="icon" onClick={startVoice} title="语音输入">
+                  <Button variant="secondary" size="icon" onClick={startVoice} title="语音输入" className="border-slate-300 hover:bg-slate-50">
                     <Mic className="h-4 w-4" />
                   </Button>
                 )
@@ -271,17 +290,23 @@ export default function HomePage(){
             </div>
             <Input type="date" value={due} onChange={e=>setDue(e.target.value)} />
             <div className="flex gap-2">
-              <Button className="flex-1" onClick={add} disabled={isLoading || processing}>添加</Button>
+              <Button className="flex-1 bg-slate-600 hover:bg-slate-700 text-white" onClick={add} disabled={isLoading || processing}>添加</Button>
               {voiceText && (
-                <Button variant="outline" onClick={()=>{ setVoiceText(""); }}>清除语音</Button>
+                <Button variant="outline" className="border-slate-300 text-slate-600 hover:bg-slate-50" onClick={()=>{ setVoiceText(""); }}>清除语音</Button>
               )}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2">
-          <CardHeader><CardTitle>当日任务</CardTitle></CardHeader>
-          <CardContent>
+          <Card className="bg-white shadow-sm border border-slate-200 lg:col-span-2">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-slate-800">
+                <div className="w-2 h-2 bg-slate-500 rounded-full"></div>
+                当日任务
+                <Badge variant="secondary" className="ml-auto bg-slate-100 text-slate-700 border-slate-200">{tasks.length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
             <TaskTable 
               tasks={tasks}
               isLoading={isLoading}
@@ -293,8 +318,9 @@ export default function HomePage(){
         </Card>
       </div>
 
-      {/* 简易编辑对话框（复用原逻辑） */}
-      <EditTaskDialog task={edit} onClose={()=> setEdit(null)} onSave={async(id, patch)=>{ await updateTask(id, patch as any); }} />
+        {/* 简易编辑对话框（复用原逻辑） */}
+        <EditTaskDialog task={edit} onClose={()=> setEdit(null)} onSave={async(id, patch)=>{ await updateTask(id, patch as any); }} />
+      </div>
     </div>
   );
 }
