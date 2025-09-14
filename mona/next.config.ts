@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   eslint: {
@@ -8,6 +9,10 @@ const nextConfig: NextConfig = {
   typescript: {
     // Do not block Vercel builds on type errors
     ignoreBuildErrors: true,
+  },
+  turbopack: {
+    // Explicitly set the workspace root to the mona folder
+    root: path.join(__dirname),
   },
 };
 
