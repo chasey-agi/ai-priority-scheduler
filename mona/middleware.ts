@@ -10,7 +10,7 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone()
   
   // Define protected routes
-  const protectedRoutes = ['/', '/tasks', '/analytics', '/api/tasks']
+  const protectedRoutes = ['/tasks', '/analytics', '/api/tasks']
   const authRoutes = ['/auth/login']
   
   const isProtectedRoute = protectedRoutes.some(route => 
@@ -21,7 +21,8 @@ export async function middleware(request: NextRequest) {
   )
   
   // Redirect to login if accessing protected route without session
-  if (isProtectedRoute && !session) {
+  // Do NOT trigger for auth routes
+  if (isProtectedRoute && !session && !isAuthRoute) {
     url.pathname = '/auth/login'
     return NextResponse.redirect(url)
   }
