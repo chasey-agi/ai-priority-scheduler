@@ -1,144 +1,38 @@
-# AI Priority Scheduler 部署指南
+# 部署说明（Deployment）
 
-本项目支持多种部署方式，推荐使用 Vercel 进行部署。
+本项目支持 Vercel 一键部署、Docker、自托管等方式。以下仅保留运行所必需的环境变量，并将高级可选项单独标注，降低部署门槛。
 
-## 🚀 快速部署（推荐）
+## 必填环境变量（当前代码实际使用）
+- OPENAI_API_KEY
+- NEXT_PUBLIC_SUPABASE_URL
+- NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-### 使用 Vercel 部署
+## 可选环境变量（按需启用的高级能力）
+- SUPABASE_SERVICE_ROLE_KEY：仅服务端管理操作（如批量迁移、RLS 维护、服务端脚本）需要；当前代码未引用
+- DATABASE_URL：仅当你使用 Prisma 或直连数据库时需要；当前代码未引用
+- NEXTAUTH_SECRET、NEXTAUTH_URL：仅当你切换到 NextAuth 方案时需要；当前代码未引用
 
-1. **安装 Vercel CLI**
-   ```bash
-   npm install -g vercel
-   ```
+## Vercel 部署
+- 推荐使用根 README 顶部的“一键部署”按钮，Vercel 将自动读取 vercel.json 并在 mona 子目录安装/构建。
+- 在 Vercel 项目 Settings → Environment Variables 中配置上述必填变量，可选变量按需添加。
 
-2. **配置环境变量**
-   
-   复制 `.env.example` 到 `.env.local` 并填入实际值：
-   ```bash
-   cp .env.example .env.local
-   ```
-   
-   需要配置的环境变量：
-   - `OPENAI_API_KEY`: OpenAI API 密钥
-   - `NEXT_PUBLIC_SUPABASE_URL`: Supabase 项目 URL
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase 匿名密钥
-   - `SUPABASE_SERVICE_ROLE_KEY`: Supabase 服务角色密钥
+## Docker 部署
+示例 Dockerfile 见仓库根目录。构建与运行示例：
 
-   - `NEXTAUTH_SECRET`: NextAuth 密钥（生成命令：`openssl rand -base64 32`）
-   - `NEXTAUTH_URL`: 部署后的域名（如：`https://your-app.vercel.app`）
-
-3. **运行部署脚本**
-   ```bash
-   ./deploy.sh
-   ```
-
-### 手动部署步骤
-
-1. **安装依赖**
-   ```bash
-   npm install
-   ```
-
-2. **构建项目**
-   ```bash
-   npm run build
-   ```
-
-5. **部署到 Vercel**
-   ```bash
-   vercel --prod
-   ```
-
-## 🔧 其他部署选项
-
-### Docker 部署
-
-创建 `Dockerfile`：
-```dockerfile
-FROM node:18-alpine
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci --only=production
-
-COPY . .
-RUN npm run build
-
-EXPOSE 3000
-
-CMD ["npm", "start"]
-```
-
-构建和运行：
 ```bash
 docker build -t ai-priority-scheduler .
-docker run -p 3000:3000 --env-file .env.local ai-priority-scheduler
+# 将必填变量通过 -e 传入
+docker run -p 3000:3000 \
+  -e OPENAI_API_KEY=... \
+  -e NEXT_PUBLIC_SUPABASE_URL=... \
+  -e NEXT_PUBLIC_SUPABASE_ANON_KEY=... \
+  ai-priority-scheduler
 ```
 
-### 自托管部署
+## 自托管/其他平台
+- 按平台方式提供环境变量注入能力，确保三项必填变量已配置；可选项按需添加。
 
-1. 在服务器上克隆项目
-2. 安装 Node.js 18+ 和 npm
-3. 按照手动部署步骤操作
-4. 使用 PM2 或类似工具管理进程：
-   ```bash
-   npm install -g pm2
-   pm2 start npm --name "ai-scheduler" -- start
-   ```
-
-## 📋 部署检查清单
-
-- [ ] 配置所有必要的环境变量
-- [ ] 确保 Supabase 数据库可访问
-- [ ] 验证 OpenAI API 密钥有效
-- [ ] 设置正确的 NEXTAUTH_URL
-
-- [ ] 测试 Google OAuth 登录
-- [ ] 验证任务创建和管理功能
-
-## 🔍 故障排除
-
-### 常见问题
-
-1. **数据库连接失败**
-   - 确保 Supabase 项目处于活跃状态
-   - 检查 Supabase 连接配置
-
-2. **OAuth 登录失败**
-   - 验证 Google OAuth 配置
-   - 检查 `NEXTAUTH_URL` 是否与实际域名匹配
-
-3. **构建失败**
-   - 确保所有依赖已安装
-   - 检查 TypeScript 类型错误
-
-4. **API 调用失败**
-   - 验证 `OPENAI_API_KEY` 是否有效
-   - 检查 API 配额和限制
-
-### 日志查看
-
-- **Vercel**: 在 Vercel 控制台查看函数日志
-- **本地**: 使用 `npm run dev` 查看开发日志
-- **生产**: 配置日志聚合服务（如 LogRocket、Sentry）
-
-## 🔒 安全注意事项
-
-1. 不要在代码中硬编码敏感信息
-2. 使用强密码生成 `NEXTAUTH_SECRET`
-3. 定期轮换 API 密钥
-4. 启用 Supabase RLS（行级安全）
-5. 配置适当的 CORS 设置
-
-## 📈 性能优化
-
-1. 启用 Next.js 图片优化
-2. 配置 CDN（Vercel 自动提供）
-3. 使用数据库连接池
-4. 实施缓存策略
-5. 监控应用性能
-
----
-
-部署完成后，访问您的应用并测试所有功能是否正常工作。如有问题，请参考故障排除部分或查看项目文档。
+## 故障排查
+- 401/403：通常为未登录或 Supabase Auth 配置问题，检查 OAuth 设置与回调域。
+- 500：检查 OPENAI_API_KEY、Supabase URL/Anon Key 是否有效、是否误填到 Server/Client 作用域。
+- 构建失败：本仓库使用根 vercel.json 指向 mona 子目录，请勿修改 Root Directory。

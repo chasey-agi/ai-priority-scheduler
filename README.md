@@ -2,7 +2,7 @@
 
 > 一款基于语音交互的 AI 任务管家，支持语音输入、任务智能分类、优先级排序、每日总结与播报，以及执行力可视化分析。
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fchasey-agi%2Fai-priority-scheduler&env=OPENAI_API_KEY,NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,SUPABASE_SERVICE_ROLE_KEY,DATABASE_URL,NEXTAUTH_SECRET,NEXTAUTH_URL&envDescription=%E8%AF%B7%E5%A1%AB%E5%86%99%20OpenAI%20API%20Key%E3%80%81Supabase%20URL%20%2F%20Anon%20Key%E3%80%81Service%20Role%20Key%E3%80%81%E6%95%B0%E6%8D%AE%E5%BA%93%20DATABASE_URL%E3%80%81NextAuth%20Secret%20%E5%8F%8A%20NextAuth%20URL%EF%BC%88%E7%94%9F%E4%BA%A7%E5%9F%9F%E5%90%8D%EF%BC%89&envLink=https%3A%2F%2Fgithub.com%2Fchasey-agi%2Fai-priority-scheduler%2Fblob%2Fmain%2Fmona%2FSUPABASE_SETUP.md)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fchasey-agi%2Fai-priority-scheduler&env=OPENAI_API_KEY,NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY&envDescription=%E5%BF%85%E5%A1%AB%EF%BC%9AOpenAI%20API%20Key%EF%BC%8CSupabase%20URL%20%E4%B8%8E%20Anon%20Key&envLink=https%3A%2F%2Fgithub.com%2Fchasey-agi%2Fai-priority-scheduler%2Fblob%2Fmain%2Fmona%2FSUPABASE_SETUP.md)
 
 - 在线一键部署：点击上方按钮，完成 Git 授权并填写环境变量后即可自动构建部署。
 - Monorepo 说明：本仓库使用根级 vercel.json，已在 install/build/dev 命令中进入 mona 子目录，无需在 Vercel 设置里修改 Root Directory。
@@ -50,14 +50,14 @@
 - cd mona && npm install
 
 3) 环境变量（创建 mona/.env.local）
-- 必填键：
+- 必填键（当前代码实际使用）：
   - OPENAI_API_KEY
   - NEXT_PUBLIC_SUPABASE_URL
   - NEXT_PUBLIC_SUPABASE_ANON_KEY
-  - SUPABASE_SERVICE_ROLE_KEY（仅服务端使用）
-  - DATABASE_URL（如使用数据库直连）
-  - NEXTAUTH_SECRET（可通过 openssl rand -base64 32 生成）
-  - NEXTAUTH_URL（本地可设 http://localhost:3000）
+- 可选（高级部署/扩展能力）：
+  - SUPABASE_SERVICE_ROLE_KEY（仅服务端管理操作需要，当前代码未用）
+  - DATABASE_URL（直连数据库/Prisma 时使用，当前代码未用）
+  - NEXTAUTH_SECRET、NEXTAUTH_URL（如采用 NextAuth，当前代码未用）
 - Supabase 初始化与表结构：参见 mona/SUPABASE_SETUP.md
 
 4) 运行
