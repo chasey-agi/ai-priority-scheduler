@@ -236,9 +236,9 @@ export default function TestAudioPage() {
           <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
             <h3 className="text-yellow-800 font-medium mb-2">测试说明</h3>
             <ul className="text-yellow-700 text-sm space-y-1">
-              <li>• 点击"开始录音"并允许麦克风权限</li>
-              <li>• 说一些包含任务信息的话，如："明天下午开会，优先级高"</li>
-              <li>• 点击"停止录音"后会显示录音预览</li>
+              <li>• 点击&quot;开始录音&quot;并允许麦克风权限</li>
+              <li>• 说一些包含任务信息的话，如：&quot;明天下午开会，优先级高&quot;</li>
+              <li>• 点击&quot;停止录音&quot;后会显示录音预览</li>
               <li>• 试听录音确认音质清晰后再查看转录结果</li>
               <li>• 检查转录文本和提取的任务信息是否正确</li>
             </ul>

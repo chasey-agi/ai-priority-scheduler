@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 
 const SpeechHint = () => (
   <div className="text-xs text-slate-500 space-y-1">
-    <p>语音示例："今天下午三点前提交项目周报，优先级高"</p>
+    <p>语音示例：&quot;今天下午三点前提交项目周报，优先级高&quot;</p>
     <p>可识别的关键词：今天/明天/后天；优先级高/中/低；日期如 2025-09-30。</p>
   </div>
 );
