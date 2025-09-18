@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerComponentClient } from '@/lib/supabase-server'
+import { getAuthenticatedUser } from '@/lib/supabase-server'
 
-// Priority mapping
+// Priority mapping - align to 1/3/5 steps
 const priorityMap = {
   'low': 1,
-  'medium': 2,
-  'high': 3,
-  'urgent': 4
-}
+  'medium': 3,
+  'high': 5,
+  'urgent': 5,
+} as const
 
-// Status mapping
+// Status mapping - normalize
 const statusMap = {
   'pending': 'pending',
-  'in-progress': 'in-progress',
+  'in-progress': 'pending',
   'completed': 'completed'
-}
+} as const
 
 // Convert date string to Date object
 function parseDate(dateString: string | null): Date | null {
@@ -23,33 +23,21 @@ function parseDate(dateString: string | null): Date | null {
   return isNaN(date.getTime()) ? null : date
 }
 
-// Get authenticated user
-async function getUser() {
-  const supabase = await createServerComponentClient()
-  const { data: { user }, error } = await supabase.auth.getUser()
-  
-  if (error || !user) {
-    throw new Error('Unauthorized')
-  }
-  
-  return user
-}
-
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const user = await getUser()
+    const { user, supabase } = await getAuthenticatedUser()
     const { id } = await params;
     const body = await req.json();
-    const supabase = await createServerComponentClient()
     const data: any = {};
 
     if (typeof body.status === "string") {
-      data.status = statusMap[body.status as keyof typeof statusMap] || body.status
+      data.status = statusMap[body.status as keyof typeof statusMap] || 'pending'
     }
     if (typeof body.content === "string") data.content = body.content;
     if (typeof body.category === "string") data.category = body.category;
     if (typeof body.priority === "string" || typeof body.priority === "number") {
-      data.priority = typeof body.priority === "number" ? body.priority : priorityMap[body.priority as keyof typeof priorityMap] || 2
+      const val = typeof body.priority === "number" ? body.priority : priorityMap[body.priority as keyof typeof priorityMap];
+      data.priority = [1,3,5].includes(Number(val)) ? Number(val) : 3;
     }
     if (typeof body.deadline === "string") {
       data.deadline = parseDate(body.deadline)
@@ -79,9 +67,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const user = await getUser()
+    const { user, supabase } = await getAuthenticatedUser()
     const { id } = await params;
-    const supabase = await createServerComponentClient()
     
     const { error } = await supabase
       .from('tasks')

@@ -37,7 +37,7 @@ export default function TaskTable({ tasks, isLoading, enableSelection, selectedI
     return "bg-green-100 text-green-700 border-green-200";
   };
 
-  const isOverdue = (deadline: string | null) => {
+  const isOverdue = (deadline?: string | null) => {
     if (!deadline) return false;
     return new Date(deadline) < new Date();
   };
@@ -116,7 +116,7 @@ export default function TaskTable({ tasks, isLoading, enableSelection, selectedI
                   />
                 </TableCell>
                 <TableCell className="align-middle py-4">
-                  <div className={cn("font-medium leading-tight break-words text-gray-900", isDone && "line-through text-gray-500")}>
+                  <div className={cn("font-medium leading-tight break-words text-gray-900", isDone && "line-through text-gray-500")}> 
                     {first}
                   </div>
                   {second && (
@@ -133,65 +133,29 @@ export default function TaskTable({ tasks, isLoading, enableSelection, selectedI
                 </TableCell>
                 <TableCell className="align-middle hidden sm:table-cell">
                   {t.deadline ? (
-                    <div className={cn("flex items-center gap-1 text-sm", overdue && "text-red-600")}>
+                    <div className={cn("flex items-center gap-1 text-sm", overdue && "text-red-600")}> 
                       {overdue && <AlertCircle className="h-4 w-4" />}
                       <Calendar className="h-4 w-4" />
                       <span>{t.deadline}</span>
                     </div>
-                  ) : (
-                    <span className="text-gray-400 text-sm">未设置</span>
-                  )}
+                  ) : null}
+                </TableCell>
+                <TableCell className="align-middle">
+                  <Badge className={getPriorityColor(priorityNum)}>{priNumToCh(priorityNum)}</Badge>
                 </TableCell>
                 <TableCell className="align-middle">
                   <div className="flex items-center gap-2">
-                    <Badge className={getPriorityColor(priorityNum)}>
-                      {priNumToCh(priorityNum)}
-                    </Badge>
-                    {onQuickPriority && (
-                      <div className="flex flex-col gap-0.5">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-5 w-5 p-0 hover:bg-gray-100" 
-                          aria-label="提高优先级" 
-                          onClick={()=> onQuickPriority(t.id, Math.min(5, priorityNum + 2))}
-                          disabled={priorityNum >= 5}
-                        >
-                          <ChevronUp className="h-3 w-3" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-5 w-5 p-0 hover:bg-gray-100" 
-                          aria-label="降低优先级" 
-                          onClick={()=> onQuickPriority(t.id, Math.max(1, priorityNum - 2))}
-                          disabled={priorityNum <= 1}
-                        >
-                          <ChevronDown className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="align-middle">
-                  <div className="flex items-center gap-1">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 hover:bg-blue-100 hover:text-blue-600" 
-                      onClick={()=>onEdit(t)} 
-                      aria-label={`编辑任务：${first}`}
-                    >
-                      <Edit2 className="h-4 w-4"/>
+                    <Button variant="ghost" size="icon" aria-label="提升优先级" onClick={() => onQuickPriority && onQuickPriority(t.id, Math.min(priorityNum + 2, 5))}>
+                      <ChevronUp className="h-4 w-4" />
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 hover:bg-red-100 hover:text-red-600" 
-                      onClick={()=>onDelete(t.id)} 
-                      aria-label={`删除任务：${first}`}
-                    >
-                      <Trash2 className="h-4 w-4"/>
+                    <Button variant="ghost" size="icon" aria-label="降低优先级" onClick={() => onQuickPriority && onQuickPriority(t.id, Math.max(priorityNum - 2, 1))}>
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" aria-label="编辑任务" onClick={() => onEdit(t)}>
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" aria-label="删除任务" onClick={() => onDelete(t.id)}>
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </TableCell>

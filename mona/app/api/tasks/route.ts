@@ -1,26 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerComponentClient } from '@/lib/supabase-server'
-import { z } from 'zod'
+import { getAuthenticatedUser, ensureUserProfile } from '@/lib/supabase-server'
 
-// Priority mapping
+// Priority mapping - align to 1/3/5 steps
 const priorityMap = {
   'low': 1,
-  'medium': 2,
-  'high': 3,
-  'urgent': 4
-}
-
-const reversePriorityMap = {
-  1: 'low',
-  2: 'medium', 
-  3: 'high',
-  4: 'urgent'
-}
+  'medium': 3,
+  'high': 5,
+  'urgent': 5,
+} as const
 
 // Status mapping
 const statusMap = {
   'pending': 'pending',
-  'in-progress': 'in-progress',
+  'in-progress': 'pending', // normalize to pending
   'completed': 'completed'
 }
 
@@ -31,22 +23,9 @@ function parseDate(dateString: string | null): Date | null {
   return isNaN(date.getTime()) ? null : date
 }
 
-// Get authenticated user
-async function getUser() {
-  const supabase = await createServerComponentClient()
-  const { data: { user }, error } = await supabase.auth.getUser()
-  
-  if (error || !user) {
-    throw new Error('Unauthorized')
-  }
-  
-  return user
-}
-
 export async function GET() {
   try {
-    const user = await getUser()
-    const supabase = await createServerComponentClient()
+    const { supabase, user } = await getAuthenticatedUser()
     
     const { data: tasks, error } = await supabase
       .from('tasks')
@@ -70,26 +49,10 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUser()
-    const supabase = await createServerComponentClient()
+    const { supabase, user } = await getAuthenticatedUser()
     
     // Ensure user exists before creating task
-    const { error: userError } = await supabase
-      .from('users')
-      .upsert({
-        id: user.id,
-        email: user.email || '',
-        name: user.user_metadata?.full_name || user.user_metadata?.name || '',
-        avatar_url: user.user_metadata?.avatar_url || null,
-        provider: user.app_metadata?.provider || 'email',
-        provider_id: user.id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-    
-    if (userError) {
-      console.error('Error creating/updating user:', userError)
-    }
+    await ensureUserProfile(supabase, user)
     
     const body = await request.json()
     const { content, category = "其他", priority, deadline, status } = body ?? {}
@@ -99,11 +62,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle priority - can be either string or number
-    let priorityValue = 2; // default to medium
+    let priorityValue = 3; // default to medium (1/3/5 steps)
     if (typeof priority === 'string') {
-      priorityValue = priorityMap[priority as keyof typeof priorityMap] || 2;
+      priorityValue = priorityMap[priority as keyof typeof priorityMap] ?? 3;
     } else if (typeof priority === 'number') {
-      priorityValue = priority;
+      // clamp to 1/3/5
+      priorityValue = [1,3,5].includes(priority) ? priority : 3;
     }
 
     const { data: created, error } = await supabase

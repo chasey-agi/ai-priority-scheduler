@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import TaskForm from "./TaskForm";
+
 type Props = {
   onSubmit: (task: {
     content: string;
@@ -55,7 +56,6 @@ export default function AddTaskDialog({ onSubmit, categories }: Props) {
           <TaskForm
             onSubmit={handleSubmit}
             categories={categories}
-            isSubmitting={isSubmitting}
           />
         </div>
       </DialogContent>

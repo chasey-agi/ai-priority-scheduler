@@ -1,24 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerComponentClient } from '@/lib/supabase-server';
+import { getAuthenticatedUser } from '@/lib/supabase-server';
 
 type Action = "complete" | "delete" | "setPriority" | "setStatus";
 
-// Get authenticated user
-async function getUser() {
-  const supabase = await createServerComponentClient()
-  const { data: { user }, error } = await supabase.auth.getUser()
-  
-  if (error || !user) {
-    throw new Error('Unauthorized')
-  }
-  
-  return user
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const user = await getUser()
-    const supabase = await createServerComponentClient()
+    const { user, supabase } = await getAuthenticatedUser()
     
     const body = await req.json();
     const ids: string[] = Array.isArray(body.ids) ? body.ids : [];
@@ -51,12 +38,13 @@ export async function POST(req: NextRequest) {
 
     if (action === "setPriority") {
       const priority = Number(body.priority);
+      // Align with utils PRIORITY_STEPS
       if (![1,3,5].includes(priority)) {
         return NextResponse.json({ error: { code: "INVALID_PRIORITY", message: "priority 必须为 1/3/5" } }, { status: 400 });
       }
       const { error, count } = await supabase
         .from('tasks')
-        .update({ priority: String(priority) })
+        .update({ priority })
         .eq('user_id', user.id)
         .in('id', ids)
       

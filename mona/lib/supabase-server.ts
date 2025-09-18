@@ -62,3 +62,30 @@ export const createMiddlewareClient = (request: NextRequest) => {
 
   return { supabase, supabaseResponse }
 }
+
+export const getAuthenticatedUser = async () => {
+  const supabase = await createServerComponentClient()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error || !user) {
+    throw new Error('Unauthorized')
+  }
+  return { supabase, user }
+}
+
+export const ensureUserProfile = async (supabase: any, user: any) => {
+  const { error } = await supabase
+    .from('users')
+    .upsert({
+      id: user.id,
+      email: user.email || '',
+      name: user.user_metadata?.full_name || user.user_metadata?.name || '',
+      avatar_url: user.user_metadata?.avatar_url || null,
+      provider: user.app_metadata?.provider || 'email',
+      provider_id: user.id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+  if (error) {
+    console.error('Error creating/updating user:', error)
+  }
+}

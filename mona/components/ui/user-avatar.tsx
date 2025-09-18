@@ -14,12 +14,9 @@ import {
 import { useAuth, getProfile, signOut } from '@/hooks/useAuth'
 import { User, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import type { Database } from '@/lib/supabase'
 
-interface UserProfile {
-  id: string
-  name?: string
-  avatar_url?: string
-}
+type UserProfile = Database['public']['Tables']['users']['Row']
 
 export function UserAvatar() {
   const { user, loading } = useAuth()
@@ -73,7 +70,7 @@ export function UserAvatar() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={avatarUrl} alt={displayName} />
+            <AvatarImage src={avatarUrl ?? undefined} alt={displayName} />
             <AvatarFallback className="bg-slate-100 text-slate-600">
               {displayName.charAt(0).toUpperCase()}
             </AvatarFallback>

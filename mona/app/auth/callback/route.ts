@@ -1,4 +1,4 @@
-import { createServerComponentClient } from '@/lib/supabase-server'
+import { createServerComponentClient, ensureUserProfile } from '@/lib/supabase-server'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
@@ -20,22 +20,7 @@ export async function GET(request: NextRequest) {
     
     if (user) {
       // Create or update user record
-      const { error: userError } = await supabase
-        .from('users')
-        .upsert({
-          id: user.id,
-          email: user.email || '',
-          name: user.user_metadata?.full_name || user.user_metadata?.name || '',
-          avatar_url: user.user_metadata?.avatar_url || null,
-          provider: user.app_metadata?.provider || 'email',
-          provider_id: user.id,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-      
-      if (userError) {
-        console.error('Error creating/updating user:', userError)
-      }
+      await ensureUserProfile(supabase, user)
     }
   }
 

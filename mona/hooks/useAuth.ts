@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { createClientComponentClient } from '@/lib/supabase'
+import type { Database } from '@/lib/supabase'
 
 export interface AuthState {
   user: User | null
@@ -96,14 +97,11 @@ export async function getProfile(userId: string) {
   return data
 }
 
-export async function updateProfile(userId: string, updates: {
-  name?: string
-  avatar_url?: string
-}) {
+export async function updateProfile(userId: string, updates: Database["public"]["Tables"]["users"]["Update"]) {
   const supabase = createClientComponentClient()
   const { data, error } = await supabase
     .from('users')
-    .update(updates)
+    .update<Database["public"]["Tables"]["users"]["Update"]>(updates)
     .eq('id', userId)
     .select()
     .single()

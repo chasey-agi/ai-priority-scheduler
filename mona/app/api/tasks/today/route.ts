@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerComponentClient } from '@/lib/supabase-server';
+import { getAuthenticatedUser } from '@/lib/supabase-server';
 
 // 将 Date 转成 YYYY-MM-DD 字符串（本地时区）
 function ymd(d: Date) {
@@ -9,22 +9,9 @@ function ymd(d: Date) {
   return `${y}-${m}-${day}`;
 }
 
-// Get authenticated user
-async function getUser() {
-  const supabase = await createServerComponentClient()
-  const { data: { user }, error } = await supabase.auth.getUser()
-  
-  if (error || !user) {
-    throw new Error('Unauthorized')
-  }
-  
-  return user
-}
-
 export async function GET(req: NextRequest) {
   try {
-    const user = await getUser()
-    const supabase = await createServerComponentClient()
+    const { supabase, user } = await getAuthenticatedUser()
     
     const url = new URL(req.url);
     const includeNoDeadlineRaw = url.searchParams.get("includeNoDeadline");
